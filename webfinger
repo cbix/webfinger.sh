@@ -1,3 +1,5 @@
 #!/bin/sh
 ID=$1
-echo $ID | sed 's/^\(.*\)@\(.*\)/\2/'
+echo $ID \
+	| sed 's/^\(.*\)@\(.*\)/http:\/\/\2\/\.well-known\/host-meta/' \
+	| xargs curl -s -L
