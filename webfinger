@@ -36,10 +36,7 @@ echo $ID \
 		template = $1;
 		addr = ENVIRON["WEBFINGERID"];
 		match(template, /template[ \t\f\n\r\v]*=[ \t\f\n\r\v]*((\".*\"|\'\''.*\'\''))/);
-		if(RLENGTH < 0) {
-			print "template attribute not found"
-			exit 1;
-		}
+		if(RLENGTH < 0) exit 1;
 		template = substr(template, RSTART, RLENGTH);
 		sub(/^template[ \t\f\n\r\v]*=[ \t\f\n\r\v]*[\'\''\"]/, "", template);
 		sub(/[\'\''\"]$/, "", template);
@@ -47,4 +44,4 @@ echo $ID \
 		print template;
 		exit 0;
 	}' \
-	| xargs curl -s -L 2>/dev/null || echo "could not webfinger $ID" 1>&2
+	| xargs curl -s -L 2>/dev/null || echo "Could not webfinger $ID" 1>&2
