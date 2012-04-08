@@ -1,5 +1,15 @@
 #!/bin/sh
 ID=$1
+URI=`echo -n acct:$ID | sed 's/:/%3a/g' | sed 's/@/%40/g'`
 echo $ID \
 	| sed 's/^\(.*\)@\(.*\)/http:\/\/\2\/\.well-known\/host-meta/' \
-	| xargs curl -s -L
+	| xargs curl -s -L \
+	| awk "
+		BEGIN {
+			RS = \"<\";
+			FS = \">\";
+		}
+		/rel\w*=\w*[\\\"\\\']lrdd[\\\"\\\']/mi {
+			print\$1;
+		}" 
+#	| sed "s/{uri}/$URI/g"
