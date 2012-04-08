@@ -1,15 +1,50 @@
 #!/bin/sh
+#		
+#		webfinger.sh - webfinger from the shell
+#		
+#		dependencies: sh, sed, xargs, curl, awk
+#       
+#		Copyright 2012 Florian Hülsmann <fh@cbix.de>
+#       
+#       This program is free software; you can redistribute it and/or modify
+#       it under the terms of the GNU General Public License as published by
+#       the Free Software Foundation; either version 3 of the License, or
+#       (at your option) any later version.
+#       
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#       GNU General Public License for more details.
+#       
+#       You should have received a copy of the GNU General Public License
+#       along with this program; if not, write to the Free Software
+#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#       MA 02110-1301, USA.
+#
+
 ID=$1
-URI=`echo -n acct:$ID | sed 's/:/%3a/g' | sed 's/@/%40/g'`
+export WEBFINGERID=`echo -n acct:$ID | sed 's/:/%3a/g' | sed 's/@/%40/g'`
 echo $ID \
 	| sed 's/^\(.*\)@\(.*\)/http:\/\/\2\/\.well-known\/host-meta/' \
 	| xargs curl -s -L \
-	| awk "
-		BEGIN {
-			RS = \"<\";
-			FS = \">\";
+	| awk '
+	BEGIN {
+		RS = "<";
+		FS = ">";
+	}
+	tolower($1) ~ /^link.+rel[ \t\f\n\r\v]*=[ \t\f\n\r\v]*(\"lrdd\"|\'\''lrdd\'\''|lrdd)/ {
+		template = $1;
+		addr = ENVIRON["WEBFINGERID"];
+		match(template, /template[ \t\f\n\r\v]*=[ \t\f\n\r\v]*((\".*\"|\'\''.*\'\''))/);
+		if(RLENGTH < 0) {
+			print "template attribute not found"
+			exit 1;
 		}
-		/rel\w*=\w*[\\\"\\\']lrdd[\\\"\\\']/mi {
-			print\$1;
-		}" 
-#	| sed "s/{uri}/$URI/g"
+		template = substr(template, RSTART, RLENGTH);
+		sub(/^template[ \t\f\n\r\v]*=[ \t\f\n\r\v]*[\'\''\"]/, "", template);
+		sub(/[\'\''\"]$/, "", template);
+		gsub(/\{uri\}/, addr, template);
+		print template;
+		exit 0;
+	}' \
+	| xargs curl -s -L
