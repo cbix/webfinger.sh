@@ -47,4 +47,4 @@ echo $ID \
 		print template;
 		exit 0;
 	}' \
-	| xargs curl -s -L
+	| xargs curl -s -L 2>/dev/null || echo "could not webfinger $ID" 1>&2
