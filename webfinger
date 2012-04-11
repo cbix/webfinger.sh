@@ -24,9 +24,9 @@
 
 ID=$1
 export WEBFINGERID=`echo -n acct:$ID | sed 's/:/%3a/g' | sed 's/@/%40/g'`
-echo $ID \
-	| sed 's/^\(.*\)@\(.*\)/http:\/\/\2\/\.well-known\/host-meta/' \
-	| xargs curl -s -L \
+HOSTMETA="`echo $ID | sed 's/^\(.*\)@\(.*\)/http:\/\/\2\/\.well-known\/host-meta/'`"
+HOSTMETASSL="`echo "$HOSTMETA" | sed 's/^http/https/'`"
+(curl -s -L "$HOSTMETASSL" 2>/dev/null || curl -s -L "$HOSTMETA" 2>/dev/null) \
 	| awk '
 	BEGIN {
 		RS = "<";
