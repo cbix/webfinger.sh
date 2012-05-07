@@ -22,6 +22,7 @@
 #       MA 02110-1301, USA.
 #
 
+[ "$1" = "" ] && echo "Usage: webfinger user@host" 1>&2 && exit 1
 export WEBFINGERID=`echo -n acct:$1 | sed 's/:/%3a/g' | sed 's/@/%40/g'`
 HOSTMETA="`echo $1 | sed 's/^\(.*\)@\(.*\)/http:\/\/\2\/\.well-known\/host-meta/'`"
 HOSTMETASSL="`echo "$HOSTMETA" | sed 's/^http/https/'`"
@@ -42,4 +43,4 @@ HOSTMETASSL="`echo "$HOSTMETA" | sed 's/^http/https/'`"
 		print "'"'"'" template "'"'"'";
 		exit 0;
 	}' \
-	| xargs curl -s -L || echo "Could not webfinger $1" 1>&2
+	| xargs curl -s -L 2>/dev/null || echo "Could not webfinger $1" 1>&2 && exit 1
